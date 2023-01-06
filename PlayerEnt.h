@@ -1,11 +1,11 @@
 #pragma once
 #include <Windows.h>
 #include <stdint.h>
+#include <map>
 
 //ReClass.NET generated class
 
 struct Vec3f { float x, y, z; };
-
 typedef struct _PLAYER_ENT
 {
 public:
@@ -56,27 +56,23 @@ public:
 	uint32_t AssaultRifleShotFired; //0x01A0
 	char pad_01A4[8]; //0x01A4
 	uint32_t AkimboShotFired; //0x01AC
-	char pad_01B0[116]; //0x01B0
-	bool padding; //0x0224
-	char Username[15]; //0x0225
-	char pad_0229[269]; //0x0229
-	uint8_t pad0; //0x0336
-	uint8_t pad1; //0x0337
-	uint8_t State; //0x0338
-	uint8_t pad3; //0x0339
-	char pad_033A[31]; //0x033A
-	void* KnifePtr; //0x0359
-	void* PistolPtr; //0x035D
-	void* CarbinePtr; //0x0361
-	void* ShotgunPtr; //0x0365
-	void* SubgunPtr; //0x0369
-	void* SniperPtr; //0x036D
-	void* AssaultRiflePtr; //0x0371
-	void* CPistolPtr; //0x0375
-	void* GrenadePtr; //0x0379
-	void* AkimboPtr; //0x037D
-	void* PreviousWeapon; //0x0381
-	void* EquipedWeapon; //0x0385
-	char pad_0389[16]; //0x0389
-	uint32_t TimeElapsed; //0x0399
-}PLAYER_ENT, *P_PLAYER_ENT; //Size: 0x039D
+	char pad_01B0[116]; // 0x1B0
+	BYTE bAttacking; //0x0224
+	char name[16]; //0x0225
+	char pad_0235[247]; // 0x235
+	BYTE Team; //0x032C
+	char pad_032D[11]; // 0x032D
+	BYTE State;//0x0338 
+	char pad_033C[15]; // 0x0339
+	uint32_t KnifePtr; //0x0348
+	uint32_t PistolPtr; //0x034C
+	uint32_t CarbinePtr; //0x0350
+	uint32_t ShotgunPtr; //0x0354
+	uint32_t SubgunPtr; //0x0358
+	uint32_t SniperPtr; //0x035C
+	uint32_t AssaultPtr; //0x0360
+	char pad_0364[4]; //0x0364
+	uint32_t GrenadePtr; //0x0368
+	char pad_036C[8]; // 0x036C
+	uint32_t EquippedWeapon; //0x0374
+}PLAYER_ENT, *P_PLAYER_ENT;

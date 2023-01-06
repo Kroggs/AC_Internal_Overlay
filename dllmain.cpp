@@ -16,6 +16,8 @@
 #include "mem.h"
 #include "hook.h"
 
+#include "hacks.h"
+
 P_PLAYER_ENT playerEnt = nullptr;
 uintptr_t showCursorAddr = NULL;
 
@@ -31,7 +33,7 @@ WNDPROC hGameWindowProc;
 
 bool inOpt = false;
 
-
+static void* current_weapon = nullptr;
 static bool imGuiInitialized = false;
 
 LRESULT CALLBACK windowProc_hook(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -91,16 +93,88 @@ BOOL __stdcall hkwglSwapBuffers(HDC hDc)
     }
     if(menuShown)
     {
+        bool is_selected = false;
+        uint32_t current_weapon = NULL;
+
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplWin32_NewFrame();
        
         ImGui::NewFrame();
         ImGui::Begin("Krog Internal Overlay");
 
+        ImGui::BeginTabBar("#tabs");
+
+        if (ImGui::BeginTabItem("Player"))
+        {
+            ImGui::SliderInt("Health", (int*)&playerEnt->Health, 0, 100);
+            ImGui::SliderInt("Armor", (int*)&playerEnt->Armor, 0, 100);
+
+            ImGui::Spacing();
+
+            ImGui::Text("Weapon : ");
+            ImGui::SameLine();
+            if (ImGui::Button("Knife", ImVec2(75, 20))) playerEnt->EquippedWeapon = playerEnt->KnifePtr; ImGui::SameLine();
+            if (ImGui::Button("Pistol", ImVec2(75, 20))) playerEnt->EquippedWeapon = playerEnt->PistolPtr; ImGui::SameLine();
+            if (ImGui::Button("Carbine", ImVec2(75, 20))) playerEnt->EquippedWeapon = playerEnt->CarbinePtr; ImGui::SameLine();
+            if (ImGui::Button("Shotgun", ImVec2(75, 20))) playerEnt->EquippedWeapon = playerEnt->ShotgunPtr; ImGui::SameLine();
+            if (ImGui::Button("Subgun", ImVec2(75, 20))) playerEnt->EquippedWeapon = playerEnt->SubgunPtr; ImGui::SameLine();
+            if (ImGui::Button("Sniper", ImVec2(75, 20))) playerEnt->EquippedWeapon = playerEnt->SniperPtr; ImGui::SameLine();
+            if (ImGui::Button("Assault", ImVec2(75, 20))) playerEnt->EquippedWeapon = playerEnt->AssaultPtr;
+
+            uint32_t* magAmmo = nullptr, * reserveAmmo = nullptr;
+            if (playerEnt->EquippedWeapon == playerEnt->PistolPtr) magAmmo = &playerEnt->PistolMagAmmo;
+            else if (playerEnt->EquippedWeapon == playerEnt->CarbinePtr) magAmmo = &playerEnt->CarbineMagAmmo;
+            else if (playerEnt->EquippedWeapon == playerEnt->ShotgunPtr) magAmmo = &playerEnt->ShotgunMagAmmo;
+            else if (playerEnt->EquippedWeapon == playerEnt->SubgunPtr) magAmmo = &playerEnt->SubgunMagAmmo;
+            else if (playerEnt->EquippedWeapon == playerEnt->SniperPtr) magAmmo = &playerEnt->SniperMagAmmo;
+            else if (playerEnt->EquippedWeapon == playerEnt->AssaultPtr) magAmmo = &playerEnt->AssaultRifeMagAmmo;
+
+            if (playerEnt->EquippedWeapon == playerEnt->PistolPtr) reserveAmmo = &playerEnt->PistolReserveAmmo;
+            else if (playerEnt->EquippedWeapon == playerEnt->CarbinePtr) reserveAmmo = &playerEnt->CarbineReserveAmmo;
+            else if (playerEnt->EquippedWeapon == playerEnt->ShotgunPtr) reserveAmmo = &playerEnt->ShotgunReserveAmmo;
+            else if (playerEnt->EquippedWeapon == playerEnt->SubgunPtr) reserveAmmo = &playerEnt->SubgunReserveAmmo;
+            else if (playerEnt->EquippedWeapon == playerEnt->SniperPtr) reserveAmmo = &playerEnt->SniperReserveAmmo;
+            else if (playerEnt->EquippedWeapon == playerEnt->AssaultPtr) reserveAmmo = &playerEnt->AssaultRifleReserveAmmo;
+
+            ImGui::Spacing();
+
+            if (magAmmo != nullptr && reserveAmmo != nullptr)
+            {
+                ImGui::SliderInt("Clip Ammo", (int*)magAmmo, 0, 65635);
+                ImGui::SliderInt("Reserve Ammo", (int*)reserveAmmo, 0, 65635);
+            }
+
+            ImGui::Spacing();
+
+            ImGui::SliderFloat("Camera X", (float*)&playerEnt->ViewAngle.x, 0.0f, 360.0f);
+            ImGui::SliderFloat("Camera Y", (float*)&playerEnt->ViewAngle.y, -90.0f, 90.0f);
+
+            ImGui::Spacing();
+
+            ImGui::SliderFloat("Position X : ", (float*)&playerEnt->Position.x, -500.f, 500.f);
+            ImGui::SliderFloat("Position Y : ", (float*)&playerEnt->Position.y, -500.f, 500.f);
+            ImGui::SliderFloat("Position Z : ", (float*)&playerEnt->Position.z, -50.f, 50.f);
+
+            ImGui::EndTabItem();
+        }
+
+        if (ImGui::BeginTabItem("Cheats"))
+        {
+            ImGui::Checkbox("Aimbot", &Hacks::bAimbotEnabled);
+            ImGui::Spacing();
+            ImGui::Checkbox("No Recoil", &Hacks::bNoRecoilEnabled);
+            ImGui::Checkbox("Rapid Fire", &Hacks::bRapidFireEnabled);
+            ImGui::Spacing();
+            ImGui::Checkbox("Infinite Health", &Hacks::bInfiniteHealthEnabled);
+            ImGui::Checkbox("Infinite Armor", &Hacks::bInfiniteArmorEnabled);
+        }
+        ImGui::EndTabBar();
         SDL_ShowCursor(1);
 
-        ImGui::Checkbox("Checkbox Mathilde", &inOpt);
+        
 
+
+        ImGui::End();
         ImGui::Render();
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -118,17 +192,15 @@ DWORD WINAPI MainThread(LPVOID reserved) {
 
     playerEnt = (P_PLAYER_ENT)(*(DWORD*)0x50F4F4);
 
-
     showCursorAddr = (uintptr_t)GetProcAddress(GetModuleHandle(L"SDL.dll"), "SDL_ShowCursor");
     SDL_ShowCursor = (tSDL_ShowCursor)showCursorAddr;
-
 
     Hook SwapBuffersHook("wglSwapBuffers", "opengl32.dll", (BYTE*)hkwglSwapBuffers, (BYTE*)&wglSwapBuffersGateway, 5);
     SwapBuffersHook.Enable();
 
     while (!(GetAsyncKeyState(VK_ESCAPE) & 0x8000))
     {
-
+        
     }
 
     FreeLibraryAndExitThread((HMODULE)reserved, NULL);

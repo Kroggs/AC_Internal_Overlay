@@ -63,7 +63,7 @@ public:
 	BYTE Team; //0x032C
 	char pad_032D[11]; // 0x032D
 	BYTE State;//0x0338 
-	char pad_033C[15]; // 0x0339
+	char pad_0339[15]; // 0x0339
 	uint32_t KnifePtr; //0x0348
 	uint32_t PistolPtr; //0x034C
 	uint32_t CarbinePtr; //0x0350

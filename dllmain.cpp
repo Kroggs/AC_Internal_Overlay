@@ -11,12 +11,12 @@
 #include "ImGUI/imgui_impl_win32.h"
 #include "ImGUI/imgui_impl_opengl3.h"
 
-
-#include "PlayerEnt.h"
 #include "mem.h"
 #include "hook.h"
 
 #include "hacks.h"
+
+
 
 P_PLAYER_ENT playerEnt = nullptr;
 uintptr_t showCursorAddr = NULL;
@@ -35,6 +35,9 @@ bool inOpt = false;
 
 static void* current_weapon = nullptr;
 static bool imGuiInitialized = false;
+
+using namespace Hacks;
+
 
 LRESULT CALLBACK windowProc_hook(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -80,6 +83,19 @@ BOOL __stdcall hkwglSwapBuffers(HDC hDc)
         hGameWindowProc = (WNDPROC)SetWindowLongPtr(hGameWindow,
             GWLP_WNDPROC, (LONG_PTR)windowProc_hook);
 
+        static int hue = 100;
+        static float col_main_sat = 180.f / 255.f;
+        static float col_main_val = 161.f / 255.f;
+        static float col_area_sat = 124.f / 255.f;
+        static float col_area_val = 100.f / 255.f;
+        static float col_back_sat = 59.f / 255.f;
+        static float col_back_val = 40.f / 255.f;
+
+        ImVec4 col_text = ImColor::HSV(hue / 255.f, 20.f / 255.f, 235.f / 255.f);
+        ImVec4 col_main = ImColor::HSV(hue / 255.f, col_main_sat, col_main_val);
+        ImVec4 col_back = ImColor::HSV(hue / 255.f, col_back_sat, col_back_val);
+        ImVec4 col_area = ImColor::HSV(hue / 255.f, col_area_sat, col_area_val);
+
         glewInit();
         ImGui::CreateContext();
         ImGui_ImplWin32_Init(hGameWindow);
@@ -89,7 +105,43 @@ BOOL __stdcall hkwglSwapBuffers(HDC hDc)
         ImGui::GetStyle().AntiAliasedLines = false;
         ImGui::CaptureMouseFromApp();
         ImGui::GetStyle().WindowTitleAlign = ImVec2(0.5f, 0.5f);
-        
+
+        ImGuiStyle& style = ImGui::GetStyle();
+
+        style.Colors[ImGuiCol_Text] = ImVec4(col_text.x, col_text.y, col_text.z, 1.00f);
+        style.Colors[ImGuiCol_TextDisabled] = ImVec4(col_text.x, col_text.y, col_text.z, 0.58f);
+        style.Colors[ImGuiCol_WindowBg] = ImVec4(col_back.x, col_back.y, col_back.z, 1.00f);
+        style.Colors[ImGuiCol_Border] = ImVec4(col_back.x, col_back.y, col_back.z, 1.00f);
+        style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+        style.Colors[ImGuiCol_FrameBg] = ImVec4(col_area.x, col_area.y, col_area.z, col_area.w + .1f);
+        style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(col_main.x, col_main.y, col_main.z, 0.68f);
+        style.Colors[ImGuiCol_FrameBgActive] = ImVec4(col_main.x, col_main.y, col_main.z, 1.00f);
+        style.Colors[ImGuiCol_TitleBg] = ImVec4(col_main.x, col_main.y, col_main.z, 0.45f);
+        style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(col_main.x, col_main.y, col_main.z, 1.00f);
+        style.Colors[ImGuiCol_TitleBgActive] = ImVec4(col_main.x, col_main.y, col_main.z, 1.00f);
+        style.Colors[ImGuiCol_MenuBarBg] = ImVec4(col_area.x, col_area.y, col_area.z, 0.57f);
+        style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(col_area.x, col_area.y, col_area.z, 1.00f);
+        style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(col_main.x, col_main.y, col_main.z, 0.85f);
+        style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(col_main.x, col_main.y, col_main.z, 0.90f);
+        style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(col_main.x, col_main.y, col_main.z, 1.00f);
+        style.Colors[ImGuiCol_CheckMark] = ImVec4(col_main.x, col_main.y, col_main.z, 0.90f);
+        style.Colors[ImGuiCol_SliderGrab] = ImVec4(col_main.x, col_main.y, col_main.z, 0.90f);
+        style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(col_main.x, col_main.y, col_main.z, 1.00f);
+        style.Colors[ImGuiCol_Button] = ImVec4(col_main.x, col_main.y, col_main.z, 0.50f);
+        style.Colors[ImGuiCol_ButtonHovered] = ImVec4(col_main.x, col_main.y, col_main.z, 1.00f);
+        style.Colors[ImGuiCol_ButtonActive] = ImVec4(col_main.x, col_main.y, col_main.z, 1.00f);
+        style.Colors[ImGuiCol_Header] = ImVec4(col_main.x, col_main.y, col_main.z, 0.76f);
+        style.Colors[ImGuiCol_HeaderHovered] = ImVec4(col_main.x, col_main.y, col_main.z, 0.86f);
+        style.Colors[ImGuiCol_HeaderActive] = ImVec4(col_main.x, col_main.y, col_main.z, 1.00f);
+        style.Colors[ImGuiCol_ResizeGrip] = ImVec4(col_main.x, col_main.y, col_main.z, 0.20f);
+        style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(col_main.x, col_main.y, col_main.z, 0.78f);
+        style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(col_main.x, col_main.y, col_main.z, 1.00f);
+        style.Colors[ImGuiCol_PlotLines] = ImVec4(col_text.x, col_text.y, col_text.z, 0.63f);
+        style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(col_main.x, col_main.y, col_main.z, 1.00f);
+        style.Colors[ImGuiCol_PlotHistogram] = ImVec4(col_text.x, col_text.y, col_text.z, 0.63f);
+        style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(col_main.x, col_main.y, col_main.z, 1.00f);
+        style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(col_main.x, col_main.y, col_main.z, 0.43f);
+        style.Colors[ImGuiCol_PopupBg] = ImVec4(col_main.x, col_main.y, col_main.z, 0.92f);
     }
     if(menuShown)
     {
@@ -109,17 +161,13 @@ BOOL __stdcall hkwglSwapBuffers(HDC hDc)
             ImGui::SliderInt("Health", (int*)&playerEnt->Health, 0, 100);
             ImGui::SliderInt("Armor", (int*)&playerEnt->Armor, 0, 100);
 
+            ImGui::Separator();
+
             ImGui::Spacing();
 
-            ImGui::Text("Weapon : ");
-            ImGui::SameLine();
-            if (ImGui::Button("Knife", ImVec2(75, 20))) playerEnt->EquippedWeapon = playerEnt->KnifePtr; ImGui::SameLine();
-            if (ImGui::Button("Pistol", ImVec2(75, 20))) playerEnt->EquippedWeapon = playerEnt->PistolPtr; ImGui::SameLine();
-            if (ImGui::Button("Carbine", ImVec2(75, 20))) playerEnt->EquippedWeapon = playerEnt->CarbinePtr; ImGui::SameLine();
-            if (ImGui::Button("Shotgun", ImVec2(75, 20))) playerEnt->EquippedWeapon = playerEnt->ShotgunPtr; ImGui::SameLine();
-            if (ImGui::Button("Subgun", ImVec2(75, 20))) playerEnt->EquippedWeapon = playerEnt->SubgunPtr; ImGui::SameLine();
-            if (ImGui::Button("Sniper", ImVec2(75, 20))) playerEnt->EquippedWeapon = playerEnt->SniperPtr; ImGui::SameLine();
-            if (ImGui::Button("Assault", ImVec2(75, 20))) playerEnt->EquippedWeapon = playerEnt->AssaultPtr;
+            UpdateWeaponValues(playerEnt);
+            ImGui::Combo("Weapon", &weapKeyIndex, weaponList, weapSize);
+            playerEnt->EquippedWeapon = weaponValues[weapKeyIndex];
 
             uint32_t* magAmmo = nullptr, * reserveAmmo = nullptr;
             if (playerEnt->EquippedWeapon == playerEnt->PistolPtr) magAmmo = &playerEnt->PistolMagAmmo;
@@ -145,11 +193,13 @@ BOOL __stdcall hkwglSwapBuffers(HDC hDc)
             }
 
             ImGui::Spacing();
+            ImGui::Separator();
 
             ImGui::SliderFloat("Camera X", (float*)&playerEnt->ViewAngle.x, 0.0f, 360.0f);
             ImGui::SliderFloat("Camera Y", (float*)&playerEnt->ViewAngle.y, -90.0f, 90.0f);
 
             ImGui::Spacing();
+            ImGui::Separator();
 
             ImGui::SliderFloat("Position X : ", (float*)&playerEnt->Position.x, -500.f, 500.f);
             ImGui::SliderFloat("Position Y : ", (float*)&playerEnt->Position.y, -500.f, 500.f);
@@ -160,14 +210,48 @@ BOOL __stdcall hkwglSwapBuffers(HDC hDc)
 
         if (ImGui::BeginTabItem("Cheats"))
         {
-            ImGui::Checkbox("Aimbot", &Hacks::bAimbotEnabled);
+            ImGui::Checkbox("Aimbot", &bAimbotEnabled);
+            ImGui::Combo("Hold key", &holdKeyIndex, holdKeys, holdSize);
+                holdKey = holdKeysCodes[holdKeyIndex];
+
             ImGui::Spacing();
-            ImGui::Checkbox("No Recoil", &Hacks::bNoRecoilEnabled);
-            ImGui::Checkbox("Rapid Fire", &Hacks::bRapidFireEnabled);
+            ImGui::Separator();
+
+            ImGui::Checkbox("No Recoil", &bNoRecoilEnabled);
+            ImGui::Checkbox("Rapid Fire", &bRapidFireEnabled);
             ImGui::Spacing();
-            ImGui::Checkbox("Infinite Health", &Hacks::bInfiniteHealthEnabled);
-            ImGui::Checkbox("Infinite Armor", &Hacks::bInfiniteArmorEnabled);
+
+            ImGui::Separator();
+            ImGui::Checkbox("Infinite Health", &bInfiniteHealthEnabled);
+            ImGui::Checkbox("Infinite Armor", &bInfiniteArmorEnabled);
+
+            ImGui::EndTabItem();
         }
+
+        if (ImGui::BeginTabItem("Debug"))
+        {
+            ImGui::Text("Player Entity Address : ");
+            ImGui::SameLine();
+            ImGui::TextColored(ImColor::HSV(100 / 255.f, 20.f / 255.f, 235.f / 255.f), "%X", (DWORD)localPlayer);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+
+            ImGui::Text("Number of players : ");
+            ImGui::SameLine();
+            ImGui::TextColored(ImColor::HSV(100 / 255.f, 20.f / 255.f, 235.f / 255.f), "%d", (*(int*)PLAYER_AMOUNT_ADDR));
+
+            ImGui::Spacing();
+
+            ImGui::Text("Closest player : ");
+            ImGui::SameLine();
+            ImGui::TextColored(ImColor::HSV(100 / 255.f, 20.f / 255.f, 235.f / 255.f), "%s", Hacks::GetClosestPlayer() > 0 ? Hacks::GetClosestPlayer()->name : "None");
+
+            ImGui::Spacing();
+
+            ImGui::EndTabItem();
+        }
+
         ImGui::EndTabBar();
         SDL_ShowCursor(1);
 
@@ -183,6 +267,10 @@ BOOL __stdcall hkwglSwapBuffers(HDC hDc)
     {
         SDL_ShowCursor(0);
     }
+
+
+    HackTick();
+
     return wglSwapBuffersGateway(hDc);
 }
 

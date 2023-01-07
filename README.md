@@ -23,5 +23,5 @@
 
 <b>Features</b>
 <ul>
-  <li><img src="Preview/prev.png"/></li>
+  <li><img src="Preview/prev2.png"/></li>
 </ul>

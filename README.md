@@ -11,7 +11,7 @@
 
 <b>TODO</b>
 <ul>
-  <li> Aimbot </li>
+  <li> Aimbot (fix some bugs) </li>
   <li> ESP </li>
   <li> No Recoil </li>
   <li> Rapid Fire </li>

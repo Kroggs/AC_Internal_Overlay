@@ -18,6 +18,7 @@
   <li> Infinite Health </li>
   <li> Infinite Armor </li>
   <li> Better ImGUI </li>
+  <li> Clean Spaghetti Code (srsly) </li>
 </ul>
 
 
